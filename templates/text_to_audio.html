@@ -1,0 +1,79 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Audio Conversion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <nav>
+       
+        <a href="/transcribe-audio">Transcribe Audio</a> 
+    </nav>
+
+    <h1>Convert Text to Audio</h1>
+
+    
+    <form action="/convert-to-audio" method="post" enctype="multipart/form-data">
+        <input type="file" name="textfile" accept=".txt, .doc, .docx, .pdf" required>
+        <button type="submit">Convert to Audio</button>
+    </form>
+
+    
+    {% if audio_file %}
+    <h2>Download your audio file:</h2>
+    <a href="{{ url_for('static', filename='uploads/' + audio_file) }}" download>Download Audio</a>
+    {% endif %}
+</body>
+
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Text to Audio Conversion</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+
+<body>
+    <nav>
+        <!-- Navigation to switch between pages -->
+        <a href="/">Transcribe Audio</a> <!-- Link back to Audio Transcription page -->
+    </nav>
+
+    <h1>Convert Text to Audio</h1>
+
+    <!-- Upload form for text files -->
+    <form action="/convert-to-audio" method="post" enctype="multipart/form-data">
+        <input type="file" name="textfile" accept=".txt, .doc, .docx, .pdf" required>
+
+        <!-- Voice Selection -->
+        <label for="voice">Select Voice:</label>
+        <select name="voice" id="voice">
+            {% for voice in voices %}
+            <option value="{{ loop.index0 }}">{{ voice.name }}</option>
+            {% endfor %}
+        </select>
+
+        <!-- Speed Selection -->
+        <label for="speed">Select Speed (words per minute):</label>
+        <input type="number" name="speed" id="speed" value="150" min="50" max="400">
+
+        <button type="submit">Convert to Audio</button>
+    </form>
+
+    <!-- Display download link for the audio file if available -->
+    {% if audio_file %}
+    <h2>Download your audio file:</h2>
+    <a href="{{ url_for('static', filename='uploads/' + audio_file) }}" download>Download Audio</a>
+    {% endif %}
+</body>
+
+</html>
