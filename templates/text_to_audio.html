@@ -48,12 +48,12 @@
         <a href="/">Transcribe Audio</a> <!-- Link back to Audio Transcription page -->
     </nav>
 
-    <h1>Convert Text to Audio</h1>
+    <h1>Convert Text, Document, or PDF to Audio</h1>
 
     <!-- Upload form for text files -->
     <form action="/convert-to-audio" method="post" enctype="multipart/form-data">
         <input type="file" name="textfile" accept=".txt, .doc, .docx, .pdf" required>
-
+        <br />
         <!-- Voice Selection -->
         <label for="voice">Select Voice:</label>
         <select name="voice" id="voice">
@@ -61,7 +61,7 @@
             <option value="{{ loop.index0 }}">{{ voice.name }}</option>
             {% endfor %}
         </select>
-
+        <br />
         <!-- Speed Selection -->
         <label for="speed">Select Speed (words per minute):</label>
         <input type="number" name="speed" id="speed" value="150" min="50" max="400">

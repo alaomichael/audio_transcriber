@@ -26,52 +26,8 @@
     {% if transcription %}
     <h2>Transcription Result:</h2>
     <p id="transcription">{{ transcription }}</p>
-    
-    <button onclick="readAloud()">Read Aloud</button>
-    {% endif %}
 
     
-    <script>
-        function readAloud() {
-            var text = document.getElementById('transcription').innerText;
-            var utterance = new SpeechSynthesisUtterance(text);
-            window.speechSynthesis.speak(utterance);
-        }
-    </script>
-</body>
-
-</html> -->
-
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Transcription</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-
-<body>
-    <nav>
-        <!-- Navigation to switch between pages -->
-        <a href="/text-to-audio">Convert Text to Audio</a> <!-- Link to Text-to-Audio page -->
-    </nav>
-
-    <h1>Upload an MP3 File for Transcription</h1>
-
-    <!-- Upload form -->
-    <form action="/transcribe" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".mp3" required>
-        <button type="submit">Transcribe</button>
-    </form>
-
-    <!-- Display the transcription result if available -->
-    {% if transcription %}
-    <h2>Transcription Result:</h2>
-    <p id="transcription">{{ transcription }}</p>
-
-    <!-- Read Aloud controls -->
     <div id="controls" style="margin-top: 20px;">
         <button onclick="startReading()">Play</button>
         <button onclick="pauseReading()">Pause</button>
@@ -87,12 +43,12 @@
         <br>
         <label for="voiceSelect">Select Voice:</label>
         <select id="voiceSelect" onchange="selectVoice(this.value)">
-            <!-- Voices will be populated dynamically -->
+            
         </select>
     </div>
     {% endif %}
 
-    <!-- JavaScript for the read aloud feature -->
+    
     <script>
         let utterance;
         let isPaused = false;
@@ -190,4 +146,519 @@
     </script>
 </body>
 
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Styles for controls */
+        #controls {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            margin-bottom: 20px;
+            /* Space below controls */
+        }
+
+        .active-button {
+            background-color: #4CAF50;
+            /* Green */
+            color: white;
+        }
+
+        /* Progress bar styling */
+        #progressBar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 20px;
+            margin-top: 10px;
+        }
+
+        #progress {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+        }
+
+        /* Highlight current sentence */
+        .highlight {
+            background-color: yellow;
+            /* Highlight color */
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/text-to-audio">Convert Text to Audio</a>
+    </nav>
+
+    <h1>Upload an MP3 File for Transcription</h1>
+
+    <form action="/transcribe" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".mp3" required>
+        <button type="submit">Transcribe</button>
+    </form>
+
+    {% if transcription %}
+    <h2>Transcription Result:</h2>
+
+    <div id="controls">
+        <button id="playBtn" onclick="startReading()">Play</button>
+        <button id="pauseBtn" onclick="pauseReading()">Pause</button>
+        <button id="resumeBtn" onclick="resumeReading()">Resume</button>
+        <button id="stopBtn" onclick="stopReading()">Stop</button>
+        <button id="rewindBtn" onclick="skipBackward()">Rewind</button>
+        <button id="forwardBtn" onclick="skipForward()">Forward</button>
+        <br>
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" onchange="changeSpeed(this.value)">
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1" onchange="changeVolume(this.value)">
+        <br>
+        <label for="voiceSelect">Select Voice:</label>
+        <select id="voiceSelect" onchange="selectVoice(this.value)"></select>
+    </div>
+
+    <p id="transcription">{{ transcription }}</p>
+
+    <!-- Progress bar -->
+    <div id="progressBar">
+        <div id="progress"></div>
+    </div>
+
+    {% endif %}
+
+    <script>
+        let utterance;
+        let isPaused = false;
+        let currentIndex = 0;
+        const text = document.getElementById('transcription').innerText.split('. ');
+
+        // Populate available voices
+        function populateVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+            voices.forEach((voice) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById('progress');
+            const percentage = (currentIndex / text.length) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        function highlightCurrentSentence() {
+            const sentences = document.querySelectorAll('#transcription span');
+            sentences.forEach((span, index) => {
+                if (index === currentIndex) {
+                    span.classList.add('highlight');
+                } else {
+                    span.classList.remove('highlight');
+                }
+            });
+        }
+
+        function startReading() {
+            if (currentIndex < text.length) {
+                utterance = new SpeechSynthesisUtterance(text[currentIndex]);
+                utterance.volume = document.getElementById('volume').value;
+                utterance.rate = document.getElementById('speed').value;
+                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === document.getElementById('voiceSelect').value);
+
+                utterance.onend = function () {
+                    currentIndex++;
+                    updateProgress();
+                    highlightCurrentSentence();
+                    if (currentIndex < text.length) {
+                        startReading();
+                    } else {
+                        currentIndex = 0; // Reset to the beginning
+                        updateProgress();
+                    }
+                };
+
+                utterance.onboundary = function (event) {
+                    if (event.charIndex > 0) {
+                        currentIndex = text.findIndex(sentence => text.join('. ').indexOf(sentence) === event.charIndex);
+                        highlightCurrentSentence();
+                    }
+                };
+
+                window.speechSynthesis.speak(utterance);
+                highlightCurrentSentence();
+                setActiveButton('playBtn');
+            }
+        }
+
+        function pauseReading() {
+            if (window.speechSynthesis.speaking && !isPaused) {
+                window.speechSynthesis.pause();
+                isPaused = true;
+                setActiveButton('pauseBtn');
+            }
+        }
+
+        function resumeReading() {
+            if (isPaused) {
+                window.speechSynthesis.resume();
+                isPaused = false;
+                setActiveButton('resumeBtn');
+            }
+        }
+
+        function stopReading() {
+            window.speechSynthesis.cancel();
+            isPaused = false;
+            currentIndex = 0;
+            updateProgress();
+            highlightCurrentSentence();
+            setActiveButton('stopBtn');
+        }
+
+        function skipBackward() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                stopReading();
+                startReading();
+            }
+        }
+
+        function skipForward() {
+            if (currentIndex < text.length - 1) {
+                currentIndex++;
+                stopReading();
+                startReading();
+            }
+        }
+
+        function changeVolume(value) {
+            if (utterance) {
+                utterance.volume = value;
+            }
+        }
+
+        function changeSpeed(value) {
+            if (utterance) {
+                utterance.rate = value;
+            }
+        }
+
+        function selectVoice(voiceName) {
+            if (utterance) {
+                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === voiceName);
+            }
+        }
+
+        function setActiveButton(buttonId) {
+            const buttons = ['playBtn', 'pauseBtn', 'resumeBtn', 'stopBtn', 'rewindBtn', 'forwardBtn'];
+            buttons.forEach(id => {
+                document.getElementById(id).classList.remove('active-button');
+            });
+            document.getElementById(buttonId).classList.add('active-button');
+        }
+
+        // Populate voices when the page loads
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+
+    </script>
+</body>
+
 </html>
+
+
+
+
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Transcription</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        /* Styles for floating controls */
+        #controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            cursor: move;
+            /* Indicates draggable */
+        }
+
+        .active-button {
+            background-color: #4CAF50;
+            /* Green */
+            color: white;
+        }
+
+        /* Progress bar styling */
+        #progressBar {
+            width: 100%;
+            background-color: #f3f3f3;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            height: 20px;
+            margin-top: 10px;
+        }
+
+        #progress {
+            height: 100%;
+            width: 0%;
+            background-color: #4CAF50;
+            border-radius: 5px;
+        }
+
+        /* Highlight current sentence */
+        .highlight {
+            background-color: yellow;
+            /* Highlight color */
+        }
+    </style>
+</head>
+
+<body>
+    <nav>
+        <a href="/text-to-audio">Convert Text to Audio</a>
+    </nav>
+
+    <h1>Upload an MP3 File for Transcription</h1>
+
+    <form action="/transcribe" method="post" enctype="multipart/form-data">
+        <input type="file" name="file" accept=".mp3" required>
+        <button type="submit">Transcribe</button>
+    </form>
+
+    {% if transcription %}
+    <h2>Transcription Result:</h2>
+    <p id="transcription">{{ transcription }}</p>
+
+    <div id="controls">
+        <button id="playBtn" onclick="startReading()">Play</button>
+        <button id="pauseBtn" onclick="pauseReading()">Pause</button>
+        <button id="resumeBtn" onclick="resumeReading()">Resume</button>
+        <button id="stopBtn" onclick="stopReading()">Stop</button>
+        <button id="rewindBtn" onclick="skipBackward()">Rewind</button>
+        <button id="forwardBtn" onclick="skipForward()">Forward</button>
+        <br>
+        <label for="speed">Speed:</label>
+        <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" onchange="changeSpeed(this.value)">
+        <label for="volume">Volume:</label>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="1" onchange="changeVolume(this.value)">
+        <br>
+        <label for="voiceSelect">Select Voice:</label>
+        <select id="voiceSelect" onchange="selectVoice(this.value)"></select>
+    </div>
+
+    
+    <div id="progressBar">
+        <div id="progress"></div>
+    </div>
+
+    {% endif %}
+
+    <script>
+        let utterance;
+        let isPaused = false;
+        let currentIndex = 0;
+        const text = document.getElementById('transcription').innerText.split('. ');
+
+        // Populate available voices
+        function populateVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            const voiceSelect = document.getElementById('voiceSelect');
+            voiceSelect.innerHTML = '';
+            voices.forEach((voice) => {
+                const option = document.createElement('option');
+                option.value = voice.name;
+                option.textContent = `${voice.name} (${voice.lang})`;
+                voiceSelect.appendChild(option);
+            });
+        }
+
+        function updateProgress() {
+            const progressBar = document.getElementById('progress');
+            const percentage = (currentIndex / text.length) * 100;
+            progressBar.style.width = percentage + '%';
+        }
+
+        function highlightCurrentSentence() {
+            const sentences = document.querySelectorAll('#transcription span');
+            sentences.forEach((span, index) => {
+                if (index === currentIndex) {
+                    span.classList.add('highlight');
+                } else {
+                    span.classList.remove('highlight');
+                }
+            });
+        }
+
+        function startReading() {
+            if (currentIndex < text.length) {
+                utterance = new SpeechSynthesisUtterance(text[currentIndex]);
+                utterance.volume = document.getElementById('volume').value;
+                utterance.rate = document.getElementById('speed').value;
+                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === document.getElementById('voiceSelect').value);
+
+                utterance.onend = function () {
+                    currentIndex++;
+                    updateProgress();
+                    highlightCurrentSentence();
+                    if (currentIndex < text.length) {
+                        startReading();
+                    } else {
+                        currentIndex = 0; // Reset to the beginning
+                        updateProgress();
+                    }
+                };
+
+                utterance.onboundary = function (event) {
+                    if (event.charIndex > 0) {
+                        currentIndex = text.findIndex(sentence => text.join('. ').indexOf(sentence) === event.charIndex);
+                        highlightCurrentSentence();
+                    }
+                };
+
+                window.speechSynthesis.speak(utterance);
+                highlightCurrentSentence();
+                setActiveButton('playBtn');
+            }
+        }
+
+        function pauseReading() {
+            if (window.speechSynthesis.speaking && !isPaused) {
+                window.speechSynthesis.pause();
+                isPaused = true;
+                setActiveButton('pauseBtn');
+            }
+        }
+
+        function resumeReading() {
+            if (isPaused) {
+                window.speechSynthesis.resume();
+                isPaused = false;
+                setActiveButton('resumeBtn');
+            }
+        }
+
+        function stopReading() {
+            window.speechSynthesis.cancel();
+            isPaused = false;
+            currentIndex = 0;
+            updateProgress();
+            highlightCurrentSentence();
+            setActiveButton('stopBtn');
+        }
+
+        function skipBackward() {
+            if (currentIndex > 0) {
+                currentIndex--;
+                stopReading();
+                startReading();
+            }
+        }
+
+        function skipForward() {
+            if (currentIndex < text.length - 1) {
+                currentIndex++;
+                stopReading();
+                startReading();
+            }
+        }
+
+        function changeVolume(value) {
+            if (utterance) {
+                utterance.volume = value;
+            }
+        }
+
+        function changeSpeed(value) {
+            if (utterance) {
+                utterance.rate = value;
+            }
+        }
+
+        function selectVoice(voiceName) {
+            if (utterance) {
+                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === voiceName);
+            }
+        }
+
+        function setActiveButton(buttonId) {
+            const buttons = ['playBtn', 'pauseBtn', 'resumeBtn', 'stopBtn', 'rewindBtn', 'forwardBtn'];
+            buttons.forEach(id => {
+                document.getElementById(id).classList.remove('active-button');
+            });
+            document.getElementById(buttonId).classList.add('active-button');
+        }
+
+        // Drag functionality for the control panel
+        dragElement(document.getElementById("controls"));
+
+        function dragElement(elmnt) {
+            let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+            elmnt.onmousedown = dragMouseDown;
+
+            function dragMouseDown(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // get the mouse cursor position at startup:
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                document.onmouseup = closeDragElement;
+                // call a function whenever the cursor moves:
+                document.onmousemove = elementDrag;
+            }
+
+            function elementDrag(e) {
+                e = e || window.event;
+                e.preventDefault();
+                // calculate the new cursor position:
+                pos1 = pos3 - e.clientX;
+                pos2 = pos4 - e.clientY;
+                pos3 = e.clientX;
+                pos4 = e.clientY;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.right = (elmnt.offsetLeft - pos1) + "px";
+            }
+
+            function closeDragElement() {
+                // stop moving when mouse button is released:
+                document.onmouseup = null;
+                document.onmousemove = null;
+            }
+        }
+
+        // Populate voices when the page loads
+        window.speechSynthesis.onvoiceschanged = populateVoices;
+
+    </script>
+</body>
+
+</html> -->
