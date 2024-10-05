@@ -31,7 +31,6 @@
 
 </html> -->
 
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -56,20 +55,19 @@
     <form action="/convert-to-audio" method="post" enctype="multipart/form-data">
         <input type="file" name="textfile" accept=".txt, .doc, .docx, .pdf" required>
         <br />
-        <!-- Voice Selection -->
 
-        <!-- <label for="voice">Select Voice:</label>
+        <!-- Voice Selection -->
+        <label for="voice">Select Voice:</label>
         <select name="voice" id="voice">
             {% for voice in voices %}
             <option value="{{ loop.index0 }}">{{ voice.name }}</option>
             {% endfor %}
-        </select> -->
+        </select>
         <br />
 
         <!-- Speed Selection -->
-
-        <!-- <label for="speed">Select Speed (words per minute):</label>
-        <input type="number" name="speed" id="speed" value="150" min="50" max="400"> -->
+        <label for="speed">Select Speed (words per minute):</label>
+        <input type="number" name="speed" id="speed" value="150" min="50" max="400">
 
         <button type="submit">Convert to Audio</button>
     </form>
@@ -82,7 +80,6 @@
 
     <!-- Footer with contact information -->
     <div id="footer">
-        <!-- <p>Developed by: Michael Alao</p> -->
         <p>
             Developed by: Michael Alao |
             <a class="contact-link" href="tel:+2347033680599">
