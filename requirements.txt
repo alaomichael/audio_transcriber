@@ -6,3 +6,4 @@ pydub
 python-docx
 PyPDF2
 gTTS
+pyttsx3
