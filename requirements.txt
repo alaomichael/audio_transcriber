@@ -1,9 +1,8 @@
 requests
 gdown
 flask
-speech_recognition
+SpeechRecognition
 pydub
-pyttsx3
 python-docx
 PyPDF2
-zipfile
+gTTS
