@@ -77,3 +77,45 @@ input[type="file"] {
     margin-bottom: 20px;
     font-size: 24px;
 }
+
+#controls {
+    background: rgba(255, 255, 255, 0.8);
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    margin-bottom: 20px;
+}
+
+#footer {
+    text-align: center;
+    /* Center align the footer */
+    margin-top: 50px;
+    /* Space above the footer */
+    padding: 50px;
+    /* Padding around the footer */
+    background-color: rgba(240, 240, 240, 0.8);
+    /* Background for footer */
+    border-radius: 5px;
+    /* Rounded corners */
+}
+
+.contact-link {
+    margin: 0 10px;
+    /* Space between icons */
+    text-decoration: none;
+    /* Remove underline from links */
+    color: #333;
+    /* Default link color */
+}
+
+.contact-link:hover {
+    color: #007BFF;
+    /* Change color on hover */
+}
+
+/* Add icon styles */
+.icon {
+    margin-right: 5px;
+    /* Space between icon and text */
+}

@@ -40,8 +40,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Text to Audio Conversion</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <!-- Font Awesome CDN for icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 
 <body>
@@ -76,24 +74,6 @@
     <h2>Download your audio file:</h2>
     <a href="{{ url_for('static', filename='uploads/' + audio_file) }}" download>Download Audio</a>
     {% endif %}
-
-    <!-- Footer with contact information -->
-    <div id="footer">
-        <!-- <p>Developed by: Michael Alao</p> -->
-        <p>
-            Developed by: Michael Alao |
-            <a class="contact-link" href="tel:+2347033680599">
-                <i class="fas fa-phone icon"></i> +2347033680599
-            </a> |
-            <a class="contact-link" href="https://wa.me/2347033680599">
-                <i class="fab fa-whatsapp icon"></i> 07033680599
-            </a> |
-            <a class="contact-link" href="mailto:devmichaelalao@gmail.com">
-                <i class="fas fa-envelope icon"></i> devmichaelalao@gmail.com
-            </a>
-        </p>
-    </div>
-
 </body>
 
 </html>

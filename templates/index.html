@@ -1,154 +1,3 @@
-<!-- <!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Audio Transcription</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-
-<body>
-    <nav>
-        
-        <a href="/text-to-audio">Convert Text to Audio</a> 
-    </nav>
-
-    <h1>Upload an MP3 File for Transcription</h1>
-
-    
-    <form action="/transcribe" method="post" enctype="multipart/form-data">
-        <input type="file" name="file" accept=".mp3" required>
-        <button type="submit">Transcribe</button>
-    </form>
-
-    
-    {% if transcription %}
-    <h2>Transcription Result:</h2>
-    <p id="transcription">{{ transcription }}</p>
-
-    
-    <div id="controls" style="margin-top: 20px;">
-        <button onclick="startReading()">Play</button>
-        <button onclick="pauseReading()">Pause</button>
-        <button onclick="resumeReading()">Resume</button>
-        <button onclick="stopReading()">Stop</button>
-        <button onclick="skipBackward()">Rewind</button>
-        <button onclick="skipForward()">Forward</button>
-        <br>
-        <label for="speed">Speed:</label>
-        <input type="range" id="speed" min="0.5" max="2" step="0.1" value="1" onchange="changeSpeed(this.value)">
-        <label for="volume">Volume:</label>
-        <input type="range" id="volume" min="0" max="1" step="0.1" value="1" onchange="changeVolume(this.value)">
-        <br>
-        <label for="voiceSelect">Select Voice:</label>
-        <select id="voiceSelect" onchange="selectVoice(this.value)">
-            
-        </select>
-    </div>
-    {% endif %}
-
-    
-    <script>
-        let utterance;
-        let isPaused = false;
-        let currentIndex = 0; // Keeps track of the current reading index
-        const text = document.getElementById('transcription').innerText.split('. '); // Split text into sentences
-
-        // Populate available voices
-        function populateVoices() {
-            const voices = window.speechSynthesis.getVoices();
-            const voiceSelect = document.getElementById('voiceSelect');
-            voiceSelect.innerHTML = ''; // Clear existing options
-            voices.forEach((voice) => {
-                const option = document.createElement('option');
-                option.value = voice.name;
-                option.textContent = `${voice.name} (${voice.lang})`;
-                voiceSelect.appendChild(option);
-            });
-        }
-
-        function startReading() {
-            if (currentIndex < text.length) {
-                utterance = new SpeechSynthesisUtterance(text[currentIndex]);
-                utterance.volume = document.getElementById('volume').value; // Set volume from slider
-                utterance.rate = document.getElementById('speed').value; // Set speech rate from slider
-                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === document.getElementById('voiceSelect').value); // Set selected voice
-
-                utterance.onend = function () {
-                    currentIndex++;
-                    if (currentIndex < text.length) {
-                        startReading(); // Automatically read the next sentence
-                    }
-                };
-
-                window.speechSynthesis.speak(utterance);
-            }
-        }
-
-        function pauseReading() {
-            if (window.speechSynthesis.speaking && !isPaused) {
-                window.speechSynthesis.pause();
-                isPaused = true;
-            }
-        }
-
-        function resumeReading() {
-            if (isPaused) {
-                window.speechSynthesis.resume();
-                isPaused = false;
-            }
-        }
-
-        function stopReading() {
-            window.speechSynthesis.cancel();
-            isPaused = false;
-            currentIndex = 0; // Reset the index when stopped
-        }
-
-        function skipBackward() {
-            if (currentIndex > 0) {
-                currentIndex--;
-                stopReading(); // Stop current reading
-                startReading(); // Start reading from the previous sentence
-            }
-        }
-
-        function skipForward() {
-            if (currentIndex < text.length - 1) {
-                currentIndex++;
-                stopReading(); // Stop current reading
-                startReading(); // Start reading from the next sentence
-            }
-        }
-
-        function changeVolume(value) {
-            if (utterance) {
-                utterance.volume = value; // Change volume based on slider
-            }
-        }
-
-        function changeSpeed(value) {
-            if (utterance) {
-                utterance.rate = value; // Change speed based on slider
-            }
-        }
-
-        function selectVoice(voiceName) {
-            if (utterance) {
-                utterance.voice = window.speechSynthesis.getVoices().find(voice => voice.name === voiceName);
-            }
-        }
-
-        // Populate voices when the page loads
-        window.speechSynthesis.onvoiceschanged = populateVoices;
-
-    </script>
-</body>
-
-</html> -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 
@@ -157,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Audio Transcription</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <!-- Font Awesome CDN for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
         /* Styles for controls */
         #controls {
@@ -240,6 +91,24 @@
     </div>
 
     {% endif %}
+
+    <!-- Footer with contact information -->
+    <div id="footer">
+        <!-- <p>Developed by: Michael Alao</p> -->
+        <p>
+            Developed by: Michael Alao |
+            <a class="contact-link" href="tel:+2347033680599">
+                <i class="fas fa-phone icon"></i> +2347033680599
+            </a> |
+            <a class="contact-link" href="https://wa.me/2347033680599">
+                <i class="fab fa-whatsapp icon"></i> 07033680599
+            </a> |
+            <a class="contact-link" href="mailto:devmichaelalao@gmail.com">
+                <i class="fas fa-envelope icon"></i> devmichaelalao@gmail.com
+            </a>
+        </p>
+    </div>
+
 
     <script>
         let utterance;
